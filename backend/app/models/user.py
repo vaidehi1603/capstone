@@ -17,5 +17,3 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     department = relationship("Department", back_populates="users")
-    reports_created = relationship("Report", back_populates="creator")
-    documents_uploaded = relationship("UploadedDocument", back_populates="uploader")
