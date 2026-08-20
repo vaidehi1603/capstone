@@ -158,7 +158,7 @@ export const DepartmentsPage = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Register New Campus Department"
-        subtitle="Adds a new monitored zone to PostgreSQL via FastAPI backend."
+        subtitle="Adds a new monitored department or facility zone to the campus GHG inventory."
       >
         <DepartmentForm
           onSuccess={() => {

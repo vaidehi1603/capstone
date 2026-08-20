@@ -68,13 +68,20 @@ class EmissionFactor(Base):
 class Appliance(Base):
     __tablename__ = "appliance"
     appliance_id = Column(Integer, primary_key=True, index=True)
+    institute_id = Column(Integer, ForeignKey("institute.institute_id"), nullable=True)
+    building_id = Column(Integer, ForeignKey("building.building_id"), nullable=True)
+    wing = Column(String(50), nullable=True)
     appliance_name = Column(String(255), nullable=False)
-    appliance_type = Column(String(100))
-    rated_power_kw = Column(Float)
+    appliance_category = Column(String(100), nullable=True) # Cooling, Lighting, IT Equipment, Ventilation, Water Systems, Vertical Transport, Other
+    appliance_type = Column(String(100), nullable=True)
+    rated_power_kw = Column(Float, nullable=True) # NULL if exact wattage unknown
+    capacity_tr = Column(Float, nullable=True) # Capacity in TR if AC
+    capacity_hp = Column(Float, nullable=True) # Capacity in HP if Pump
+    operating_hours_per_day = Column(Float, default=8.0, nullable=True)
     quantity = Column(Integer, default=1)
-    building_id = Column(Integer, ForeignKey("building.building_id"))
-    zone_id = Column(Integer, ForeignKey("zone.zone_id"))
-    source_type = Column(String(100))
+    zone_id = Column(Integer, ForeignKey("zone.zone_id"), nullable=True)
+    source_type = Column(String(100), nullable=True)
+    source_dataset_id = Column(Integer, ForeignKey("data_source.source_dataset_id"), nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 class ApplianceUsage(Base):
@@ -90,13 +97,26 @@ class ApplianceUsage(Base):
 class EnergyConsumption(Base):
     __tablename__ = "energy_consumption"
     energy_id = Column(Integer, primary_key=True, index=True)
-    building_id = Column(Integer, ForeignKey("building.building_id"))
-    campus_id = Column(Integer, ForeignKey("campus.campus_id"))
+    institute_id = Column(Integer, ForeignKey("institute.institute_id"), nullable=True)
+    campus_id = Column(Integer, ForeignKey("campus.campus_id"), nullable=True)
+    building_id = Column(Integer, ForeignKey("building.building_id"), nullable=True)
+    wing = Column(String(50), nullable=True) # 'A Wing', 'B Wing', 'Construction'
     timestamp = Column(DateTime(timezone=True), nullable=False, index=True)
-    energy_source = Column(String(100))
-    consumption_value = Column(Float)
-    unit = Column(String(50))
-    source_dataset_id = Column(Integer, ForeignKey("data_source.source_dataset_id"))
+    date = Column(Date, nullable=True)
+    year = Column(Integer, nullable=True)
+    month = Column(String(50), nullable=True)
+    month_number = Column(Integer, nullable=True)
+    billing_demand = Column(Float, nullable=True)
+    units_consumed_kwh = Column(Float, nullable=True)
+    amount_paid = Column(Float, nullable=True)
+    rate_per_unit = Column(Float, nullable=True)
+    power_factor = Column(Float, nullable=True)
+    energy_source = Column(String(100), default="Grid Electricity")
+    consumption_value = Column(Float, nullable=True)
+    unit = Column(String(50), default="kWh")
+    data_source_type = Column(String(50), default="VESIT_ACTUAL") # "VESIT_ACTUAL" or "TEST_DEMO"
+    source_dataset_id = Column(Integer, ForeignKey("data_source.source_dataset_id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 class SolarSite(Base):
     __tablename__ = "solar_site"
@@ -206,3 +226,37 @@ class CarbonEmission(Base):
     calculation_method = Column(String(100))
     source_dataset_id = Column(Integer, ForeignKey("data_source.source_dataset_id"))
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+class CarbonCalculationRun(Base):
+    __tablename__ = "carbon_calculation_run"
+    run_id = Column(Integer, primary_key=True, index=True)
+    source_dataset_id = Column(Integer, ForeignKey("data_source.source_dataset_id"))
+    started_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    completed_at = Column(DateTime(timezone=True))
+    records_processed = Column(Integer, default=0)
+    records_successful = Column(Integer, default=0)
+    records_failed = Column(Integer, default=0)
+    total_emissions_kgco2e = Column(Float, default=0.0)
+    status = Column(String(50))
+    error_summary = Column(Text)
+
+class CarbonCalculationLog(Base):
+    __tablename__ = "carbon_calculation_log"
+    log_id = Column(Integer, primary_key=True, index=True)
+    run_id = Column(Integer, ForeignKey("carbon_calculation_run.run_id", ondelete="CASCADE"))
+    emission_id = Column(Integer, ForeignKey("carbon_emission.emission_id"))
+    campus_id = Column(Integer, ForeignKey("campus.campus_id"))
+    building_id = Column(Integer, ForeignKey("building.building_id"))
+    zone_id = Column(Integer, ForeignKey("zone.zone_id"))
+    appliance_id = Column(Integer, ForeignKey("appliance.appliance_id"))
+    date = Column(DateTime(timezone=True))
+    category = Column(String(100))
+    activity_value = Column(Float)
+    activity_unit = Column(String(50))
+    emission_factor_id = Column(Integer, ForeignKey("emission_factor.emission_factor_id"))
+    emission_factor_value = Column(Float)
+    emission_factor_source = Column(String(255))
+    scope = Column(String(50))
+    emission_kgco2e = Column(Float)
+    calculation_method = Column(String(100))
+    calculation_timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

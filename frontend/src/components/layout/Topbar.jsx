@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { useDataMode, DATA_MODES } from '../../context/DataModeContext';
 import { healthService } from '../../services/healthService';
 import { USER_ROLES, ROLE_BADGE_COLORS } from '../../utils/constants';
 import {
@@ -9,14 +10,18 @@ import {
   LogOut,
   ChevronDown,
   RefreshCw,
+  Building2,
+  FlaskConical,
 } from 'lucide-react';
 
 export const Topbar = ({ onOpenSidebar }) => {
   const { user, logout, switchDemoRole } = useAuth();
+  const { dataMode, setDataMode, isVesit } = useDataMode();
   const [backendHealthy, setBackendHealthy] = useState(null);
   const [dbHealthy, setDbHealthy] = useState(null);
   const [checkingHealth, setCheckingHealth] = useState(false);
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  const [showDataModeDropdown, setShowDataModeDropdown] = useState(false);
 
   const checkStatus = async () => {
     setCheckingHealth(true);
@@ -53,45 +58,113 @@ export const Topbar = ({ onOpenSidebar }) => {
         </button>
 
         <div className="hidden sm:block">
-          <h1 className="text-sm font-bold text-slate-100">
-            Smart Campus Carbon Intelligence Platform
-          </h1>
-          <p className="text-[11px] text-slate-400 font-mono">
-            AI-Driven Sustainability Framework • ISO 14064 GHG Accounting
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-bold text-slate-100">
+              VESIT Carbon Accounting & Forecasting Platform
+            </h1>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              V.E.S. Institute of Technology
+            </span>
+          </div>
+          <p className="text-[11px] text-slate-400 font-sans">
+            Automated Carbon Accounting & Energy Intelligence • ISO 14064 GHG Standards
           </p>
         </div>
       </div>
 
       {/* Right Actions */}
       <div className="flex items-center gap-3">
-        {/* Backend & DB Health Badge */}
+        {/* DATA MODE SELECTOR */}
+        <div className="relative">
+          <button
+            onClick={() => setShowDataModeDropdown(!showDataModeDropdown)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
+              isVesit
+                ? 'bg-emerald-950/60 text-emerald-300 border-emerald-700/60 shadow-[0_0_12px_rgba(16,185,129,0.15)]'
+                : 'bg-amber-950/60 text-amber-300 border-amber-700/60 shadow-[0_0_12px_rgba(245,158,11,0.15)]'
+            }`}
+          >
+            {isVesit ? (
+              <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+            ) : (
+              <FlaskConical className="w-3.5 h-3.5 text-amber-400" />
+            )}
+            <span className="font-mono">
+              {isVesit ? 'VESIT Actual Data' : 'Test / Demo Data'}
+            </span>
+            <ChevronDown className="w-3 h-3 opacity-60" />
+          </button>
+
+          {showDataModeDropdown && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowDataModeDropdown(false)}
+              />
+              <div className="absolute right-0 mt-2 w-56 rounded-xl bg-slate-900 border border-slate-700 shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95">
+                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 mb-1">
+                  Data Source Mode
+                </div>
+                <button
+                  onClick={() => {
+                    setDataMode(DATA_MODES.VESIT_ACTUAL);
+                    setShowDataModeDropdown(false);
+                  }}
+                  className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between ${
+                    isVesit
+                      ? 'bg-emerald-500/20 text-emerald-300 font-bold'
+                      : 'text-slate-300 hover:bg-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <div>
+                      <div className="font-semibold">VESIT Actual Data</div>
+                      <div className="text-[10px] text-slate-400 font-normal">2022-2026 Institute Electricity & Assets</div>
+                    </div>
+                  </div>
+                  {isVesit && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setDataMode(DATA_MODES.TEST_DEMO);
+                    setShowDataModeDropdown(false);
+                  }}
+                  className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between mt-1 ${
+                    !isVesit
+                      ? 'bg-amber-500/20 text-amber-300 font-bold'
+                      : 'text-slate-300 hover:bg-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <FlaskConical className="w-3.5 h-3.5 text-amber-400" />
+                    <div>
+                      <div className="font-semibold">Test / Demo Data</div>
+                      <div className="text-[10px] text-slate-400 font-normal">Synthesized Multi-Department Test Set</div>
+                    </div>
+                  </div>
+                  {!isVesit && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Live Campus Data Indicator */}
         <div
           onClick={checkStatus}
-          title="Click to refresh backend health"
-          className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950/60 border border-slate-800 cursor-pointer hover:border-slate-700 transition-colors"
+          title="System connected and data active"
+          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs font-medium text-slate-300 hover:border-slate-700 transition-colors"
         >
-          <div className="flex items-center gap-1.5 text-[11px] font-mono">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                backendHealthy === true
-                  ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
-                  : backendHealthy === false
-                  ? 'bg-rose-400 shadow-[0_0_8px_#f43f5e]'
-                  : 'bg-amber-400 animate-pulse'
-              }`}
-            />
-            <span className="text-slate-400 font-medium">FastAPI</span>
-          </div>
-          <span className="text-slate-700">|</span>
-          <div className="flex items-center gap-1.5 text-[11px] font-mono">
-            <Database
-              className={`w-3 h-3 ${
-                dbHealthy === true ? 'text-emerald-400' : 'text-slate-500'
-              }`}
-            />
-            <span className="text-slate-400 font-medium">PostgreSQL</span>
-          </div>
-          {checkingHealth && <RefreshCw className="w-3 h-3 text-slate-400 animate-spin ml-1" />}
+          <span
+            className={`w-2 h-2 rounded-full ${
+              backendHealthy !== false
+                ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
+                : 'bg-rose-400 shadow-[0_0_8px_#f43f5e]'
+            }`}
+          />
+          <span className="text-slate-300">Live Campus Data</span>
         </div>
 
         {/* Role Switcher for Final-Year Project Evaluation */}
@@ -151,3 +224,4 @@ export const Topbar = ({ onOpenSidebar }) => {
     </header>
   );
 };
+

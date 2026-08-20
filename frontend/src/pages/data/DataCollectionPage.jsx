@@ -6,6 +6,7 @@ import { departmentService } from '../../services/departmentService';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { ElectricityForm } from '../../components/forms/ElectricityForm';
+import { BillUploadWorkflow } from '../../components/forms/BillUploadWorkflow';
 import { DataTable } from '../../components/tables/DataTable';
 import { Modal } from '../../components/common/Modal';
 import { Badge } from '../../components/common/Badge';
@@ -19,6 +20,8 @@ import {
   HardDrive,
   Plus,
   ArrowRight,
+  UploadCloud,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 export const DataCollectionPage = () => {
@@ -31,6 +34,7 @@ export const DataCollectionPage = () => {
   const [appliancesList, setAppliancesList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBillUploadOpen, setIsBillUploadOpen] = useState(false);
 
   const { isAdmin, isMaintenance } = useAuth();
   const toast = useToast();
@@ -89,15 +93,25 @@ export const DataCollectionPage = () => {
           </p>
         </div>
 
-        {(isAdmin || isMaintenance) && (
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition-all shadow-lg shadow-brand-900/40"
+            onClick={() => setIsBillUploadOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-950/40"
           >
-            <Plus className="w-4 h-4" />
-            Add {tabs.find((t) => t.id === activeTab)?.name.split(' ')[0]} Entry
+            <UploadCloud className="w-4 h-4" />
+            Upload Electricity Bill
           </button>
-        )}
+
+          {(isAdmin || isMaintenance) && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition-all shadow-lg shadow-brand-900/40"
+            >
+              <Plus className="w-4 h-4" />
+              Add {tabs.find((t) => t.id === activeTab)?.name.split(' ')[0]} Entry
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tab Navigation Pill Bar */}
@@ -135,10 +149,10 @@ export const DataCollectionPage = () => {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-200">
-                  Real FastAPI Backend Active Endpoint: <span className="font-mono text-brand-400">/api/v1/electricity/</span>
+                  Campus Electricity Telemetry & Metered Records
                 </h4>
                 <p className="text-[11px] text-slate-400">
-                  Submissions automatically compute Scope 2 carbon emission records synchronously in PostgreSQL.
+                  Metered electricity inputs generate standardized Scope 2 carbon accounting records.
                 </p>
               </div>
             </div>
@@ -319,12 +333,27 @@ export const DataCollectionPage = () => {
         </div>
       )}
 
+      {/* Bill Upload Workflow Modal */}
+      <Modal
+        isOpen={isBillUploadOpen}
+        onClose={() => setIsBillUploadOpen(false)}
+        title="Upload Electricity Bill & Compute Carbon"
+        subtitle="Automatic entity extraction, historical validation, and deterministic Scope 2 calculation."
+      >
+        <BillUploadWorkflow
+          onSuccess={() => {
+            loadAll();
+          }}
+          onCancel={() => setIsBillUploadOpen(false)}
+        />
+      </Modal>
+
       {/* Entry Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Record Campus Electricity Consumption"
-        subtitle="Saves directly to FastAPI backend and runs synchronous carbon emission calculation."
+        subtitle="Input verified electricity consumption for automated Scope 2 carbon calculation."
       >
         <ElectricityForm
           departments={departments}

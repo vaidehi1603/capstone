@@ -175,8 +175,8 @@ export const LoginPage = () => {
         </div>
 
         {/* Architecture Note Footer */}
-        <div className="text-center mt-6 text-[11px] text-slate-500 font-mono">
-          FastAPI Backend Authentication • PostgreSQL Database
+        <div className="text-center mt-6 text-[11px] text-slate-500 font-sans">
+          VESIT Smart Campus Sustainability & Carbon Accounting Platform
         </div>
       </div>
     </div>

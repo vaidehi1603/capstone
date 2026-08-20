@@ -97,7 +97,7 @@ export const SettingsPage = () => {
                 <Server className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-200">FastAPI Backend Gateway</h3>
+                <h3 className="text-sm font-bold text-slate-200">Sustainability Data Gateway</h3>
                 <span className="text-[11px] font-mono text-slate-400">
                   {import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'}
                 </span>
@@ -112,8 +112,8 @@ export const SettingsPage = () => {
 
           <div className="space-y-2 text-xs">
             <div className="flex items-center justify-between text-slate-300">
-              <span className="text-slate-400">Health Endpoint:</span>
-              <span className="font-mono text-slate-200">GET /api/v1/health</span>
+              <span className="text-slate-400">System Gateway:</span>
+              <span className="font-mono text-slate-200">Online & Synchronized</span>
             </div>
             <div className="flex items-center justify-between text-slate-300">
               <span className="text-slate-400">Response:</span>
@@ -122,8 +122,8 @@ export const SettingsPage = () => {
               </span>
             </div>
             <div className="flex items-center justify-between text-slate-300">
-              <span className="text-slate-400">CORS Allowed:</span>
-              <span className="font-mono text-slate-200">http://localhost:5173</span>
+              <span className="text-slate-400">Environment:</span>
+              <span className="font-mono text-slate-200">College Production</span>
             </div>
           </div>
         </div>
@@ -136,8 +136,8 @@ export const SettingsPage = () => {
                 <Database className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-200">PostgreSQL Database Connection</h3>
-                <span className="text-[11px] font-mono text-slate-400">SQLAlchemy ORM + Alembic</span>
+                <h3 className="text-sm font-bold text-slate-200">Campus Database Engine</h3>
+                <span className="text-[11px] font-mono text-slate-400">Active Energy & Asset Records</span>
               </div>
             </div>
             {dbHealth?.success ? (

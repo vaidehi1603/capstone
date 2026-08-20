@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { simulationService } from '../../services/simulationService';
+import { useDataMode } from '../../context/DataModeContext';
 import { SimulationBarChart } from '../../components/charts/SimulationBarChart';
 import { Badge } from '../../components/common/Badge';
 import { formatCarbon } from '../../utils/formatters';
@@ -11,9 +12,11 @@ import {
   Sparkles,
   RotateCcw,
   Sliders,
+  Building2,
 } from 'lucide-react';
 
 export const SimulationPage = () => {
+  const { isVesit } = useDataMode();
   const [solarOffsetPct, setSolarOffsetPct] = useState(25);
   const [hvacEfficiencyPct, setHvacEfficiencyPct] = useState(20);
   const [evTransitionPct, setEvTransitionPct] = useState(40);
@@ -28,13 +31,13 @@ export const SimulationPage = () => {
         hvacEfficiencyPct,
         evTransitionPct,
         wasteDiversionPct,
-        baselineTotalKg: 8200,
+        baselineTotalKg: isVesit ? 418993 : 8200,
       });
       setSimResult(result);
     } catch (e) {
       console.error(e);
     }
-  }, [solarOffsetPct, hvacEfficiencyPct, evTransitionPct, wasteDiversionPct]);
+  }, [solarOffsetPct, hvacEfficiencyPct, evTransitionPct, wasteDiversionPct, isVesit]);
 
   useEffect(() => {
     runSim();
@@ -54,12 +57,12 @@ export const SimulationPage = () => {
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-xl sm:text-2xl font-extrabold text-slate-100 tracking-tight">
-              What-If Sustainability Policy Simulator
+              Campus Sustainability Impact Simulator
             </h2>
             <Badge variant="cyan">Scenario Modeling</Badge>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Simulate the carbon reduction impact of green campus capital investments before official deployment.
+            Model the carbon reduction and energy savings of green campus capital investments before official deployment.
           </p>
         </div>
 

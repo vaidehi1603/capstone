@@ -43,11 +43,11 @@ export const Sidebar = ({ isOpen, onClose }) => {
       ],
     },
     {
-      label: 'AI & Intelligence',
+      label: 'Campus Intelligence',
       items: [
-        { name: 'ML Predictions', path: '/predictions', icon: TrendingUp, badge: 'ML' },
-        { name: 'AI Recommendations', path: '/recommendations', icon: Lightbulb, badge: 'AI' },
-        { name: 'What-If Simulation', path: '/simulation', icon: Cpu },
+        { name: 'Carbon Forecast', path: '/predictions', icon: TrendingUp },
+        { name: 'Sustainability Recommendations', path: '/recommendations', icon: Lightbulb },
+        { name: 'Impact Simulator', path: '/simulation', icon: Cpu },
         { name: 'ESG Reports', path: '/reports', icon: FileText },
       ],
     },
