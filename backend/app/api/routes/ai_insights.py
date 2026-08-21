@@ -22,11 +22,15 @@ async def get_ai_recommendations_get(
     return {"recommendations": result}
 
 @router.post("/recommendations", dependencies=[Depends(RoleChecker(["ADMIN", "VIEWER"]))])
-async def get_ai_recommendations_post(req: RecommendationRequest, db: Session = Depends(get_db)):
+async def get_ai_recommendations_post(
+    req: Optional[RecommendationRequest] = None, 
+    db: Session = Depends(get_db)
+):
     """
     Get AI sustainability recommendations powered by Google Gemini (with rule-based fallback).
     """
-    result = await ai_service.generate_recommendations(db, building_identifier=req.building_identifier)
+    building = req.building_identifier if req else "VESIT Chembur Campus"
+    result = await ai_service.generate_recommendations(db, building_identifier=building)
     return {"recommendations": result}
 
 @router.get("/forecast", dependencies=[Depends(RoleChecker(["ADMIN", "VIEWER"]))])

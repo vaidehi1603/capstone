@@ -157,25 +157,54 @@ Each object MUST have exactly these keys:
 - "category": (string) "Cooling & HVAC", "Lighting", "IT Infrastructure", or "Renewable Energy"
 """
 
-        if not settings.GEMINI_API_KEY:
-            return get_rule_based_recommendations(get_dashboard_metrics(db))
+        api_key = settings.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "")
+        if api_key:
+            genai.configure(api_key=api_key)
 
-        model = genai.GenerativeModel('gemini-2.5-flash')
-        response = model.generate_content(prompt)
-        text_response = response.text.strip()
+        candidate_models = [
+            'gemini-3.5-flash-lite',
+            'gemini-flash-latest',
+            'gemini-3.1-flash-lite',
+            'gemini-flash-lite-latest',
+            'gemini-2.5-flash',
+            'gemini-2.5-pro'
+        ]
 
-        if text_response.startswith("```json"):
-            text_response = text_response[7:]
-        if text_response.startswith("```"):
-            text_response = text_response[3:]
-        if text_response.endswith("```"):
-            text_response = text_response[:-3]
+        text_response = None
+        used_model_name = None
 
-        recommendations = json.loads(text_response.strip())
-        if isinstance(recommendations, list):
-            for r in recommendations:
-                r["source"] = "Google Gemini AI (VESIT Contextual Intelligence)"
-            return recommendations[:4]
+        for m_name in candidate_models:
+            try:
+                model = genai.GenerativeModel(m_name)
+                response = model.generate_content(prompt)
+                if response and response.text:
+                    text_response = response.text.strip()
+                    used_model_name = m_name
+                    logger.info(f"Successfully generated Gemini recommendations using model: {m_name}")
+                    break
+            except Exception as model_err:
+                logger.warning(f"Gemini model {m_name} failed: {model_err}, trying next candidate...")
+
+        if text_response:
+            # Clean markdown JSON formatting if present
+            cleaned = text_response
+            if "```json" in cleaned:
+                cleaned = cleaned.split("```json")[1].split("```")[0]
+            elif "```" in cleaned:
+                cleaned = cleaned.split("```")[1].split("```")[0]
+
+            cleaned = cleaned.strip()
+            # Extract JSON array substring if extra text is present
+            if "[" in cleaned and "]" in cleaned:
+                start_idx = cleaned.find("[")
+                end_idx = cleaned.rfind("]") + 1
+                cleaned = cleaned[start_idx:end_idx]
+
+            recommendations = json.loads(cleaned)
+            if isinstance(recommendations, list) and len(recommendations) > 0:
+                for r in recommendations:
+                    r["source"] = f"Google Gemini AI ({used_model_name})"
+                return recommendations[:4]
 
         return get_rule_based_recommendations(get_dashboard_metrics(db))
 
