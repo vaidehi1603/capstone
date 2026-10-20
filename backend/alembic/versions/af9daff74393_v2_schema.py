@@ -153,13 +153,27 @@ def upgrade() -> None:
     op.create_index(op.f('ix_transport_activity_transport_id'), 'transport_activity', ['transport_id'], unique=False)
     op.create_table('energy_consumption',
     sa.Column('energy_id', sa.Integer(), nullable=False),
-    sa.Column('building_id', sa.Integer(), nullable=True),
+    sa.Column('institute_id', sa.Integer(), nullable=True),
     sa.Column('campus_id', sa.Integer(), nullable=True),
+    sa.Column('building_id', sa.Integer(), nullable=True),
+    sa.Column('wing', sa.String(length=50), nullable=True),
     sa.Column('timestamp', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('date', sa.Date(), nullable=True),
+    sa.Column('year', sa.Integer(), nullable=True),
+    sa.Column('month', sa.String(length=50), nullable=True),
+    sa.Column('month_number', sa.Integer(), nullable=True),
+    sa.Column('billing_demand', sa.Float(), nullable=True),
+    sa.Column('units_consumed_kwh', sa.Float(), nullable=True),
+    sa.Column('amount_paid', sa.Float(), nullable=True),
+    sa.Column('rate_per_unit', sa.Float(), nullable=True),
+    sa.Column('power_factor', sa.Float(), nullable=True),
     sa.Column('energy_source', sa.String(length=100), nullable=True),
     sa.Column('consumption_value', sa.Float(), nullable=True),
     sa.Column('unit', sa.String(length=50), nullable=True),
+    sa.Column('data_source_type', sa.String(length=50), nullable=True),
     sa.Column('source_dataset_id', sa.Integer(), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
+    sa.ForeignKeyConstraint(['institute_id'], ['institute.institute_id'], ),
     sa.ForeignKeyConstraint(['building_id'], ['building.building_id'], ),
     sa.ForeignKeyConstraint(['campus_id'], ['campus.campus_id'], ),
     sa.ForeignKeyConstraint(['source_dataset_id'], ['data_source.source_dataset_id'], ),
@@ -225,16 +239,25 @@ def upgrade() -> None:
     op.create_index(op.f('ix_zone_zone_id'), 'zone', ['zone_id'], unique=False)
     op.create_table('appliance',
     sa.Column('appliance_id', sa.Integer(), nullable=False),
+    sa.Column('institute_id', sa.Integer(), nullable=True),
+    sa.Column('building_id', sa.Integer(), nullable=True),
+    sa.Column('wing', sa.String(length=50), nullable=True),
     sa.Column('appliance_name', sa.String(length=255), nullable=False),
+    sa.Column('appliance_category', sa.String(length=100), nullable=True),
     sa.Column('appliance_type', sa.String(length=100), nullable=True),
     sa.Column('rated_power_kw', sa.Float(), nullable=True),
+    sa.Column('capacity_tr', sa.Float(), nullable=True),
+    sa.Column('capacity_hp', sa.Float(), nullable=True),
+    sa.Column('operating_hours_per_day', sa.Float(), nullable=True),
     sa.Column('quantity', sa.Integer(), nullable=True),
-    sa.Column('building_id', sa.Integer(), nullable=True),
     sa.Column('zone_id', sa.Integer(), nullable=True),
     sa.Column('source_type', sa.String(length=100), nullable=True),
+    sa.Column('source_dataset_id', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
+    sa.ForeignKeyConstraint(['institute_id'], ['institute.institute_id'], ),
     sa.ForeignKeyConstraint(['building_id'], ['building.building_id'], ),
     sa.ForeignKeyConstraint(['zone_id'], ['zone.zone_id'], ),
+    sa.ForeignKeyConstraint(['source_dataset_id'], ['data_source.source_dataset_id'], ),
     sa.PrimaryKeyConstraint('appliance_id')
     )
     op.create_index(op.f('ix_appliance_appliance_id'), 'appliance', ['appliance_id'], unique=False)
@@ -278,33 +301,6 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_carbon_emission_date'), 'carbon_emission', ['date'], unique=False)
     op.create_index(op.f('ix_carbon_emission_emission_id'), 'carbon_emission', ['emission_id'], unique=False)
-    op.drop_index(op.f('ix_recommendations_id'), table_name='recommendations')
-    op.drop_table('recommendations')
-    op.drop_index(op.f('ix_infrastructure_data_id'), table_name='infrastructure_data')
-    op.drop_table('infrastructure_data')
-    op.drop_index(op.f('ix_water_data_id'), table_name='water_data')
-    op.drop_table('water_data')
-    op.drop_index(op.f('ix_reports_id'), table_name='reports')
-    op.drop_table('reports')
-    op.drop_index(op.f('ix_predictions_id'), table_name='predictions')
-    op.drop_table('predictions')
-    op.drop_index(op.f('ix_carbon_calculations_id'), table_name='carbon_calculations')
-    op.drop_table('carbon_calculations')
-    op.drop_index(op.f('ix_electricity_data_id'), table_name='electricity_data')
-    op.drop_table('electricity_data')
-    op.drop_index(op.f('ix_transportation_data_id'), table_name='transportation_data')
-    op.drop_table('transportation_data')
-    op.drop_index(op.f('ix_simulations_id'), table_name='simulations')
-    op.drop_table('simulations')
-    op.drop_index(op.f('ix_appliances_id'), table_name='appliances')
-    op.drop_table('appliances')
-    op.drop_index(op.f('ix_uploaded_documents_id'), table_name='uploaded_documents')
-    op.drop_table('uploaded_documents')
-    op.drop_index(op.f('ix_emission_factors_category'), table_name='emission_factors')
-    op.drop_index(op.f('ix_emission_factors_id'), table_name='emission_factors')
-    op.drop_table('emission_factors')
-    op.drop_index(op.f('ix_waste_data_id'), table_name='waste_data')
-    op.drop_table('waste_data')
     # ### end Alembic commands ###
 
 

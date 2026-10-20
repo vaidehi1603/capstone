@@ -6,6 +6,7 @@ import re
 
 # Add backend directory to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../backend')))
+sys.path.append('/app')
 from app.db.session import SessionLocal, engine
 from app.db.base import Base
 from app.models.schema import (

@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/carbon_sustainability
+      - DATABASE_URL=postgresql+psycopg2://postgres:postgres@postgres:5432/carbon_sustainability
       - ENVIRONMENT=development
       - DEBUG=True
       - SECRET_KEY=supersecretkey_change_in_production
@@ -15,7 +15,9 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      - ../database:/database
+      - ../python:/python
+    command: sh -c "alembic upgrade head && python -m app.db.seed && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   postgres:
     image: postgres:15-alpine
