@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { electricityService } from '../../services/electricityService';
 import { departmentService } from '../../services/departmentService';
-import { analyticsService } from '../../services/analyticsService';
 import { reportService } from '../../services/reportService';
 import { useAuth } from '../../hooks/useAuth';
 import { useDataMode } from '../../context/DataModeContext';
@@ -14,7 +13,7 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
 import { Badge } from '../../components/common/Badge';
 import { formatNumber, formatCarbon, formatDate, extractErrorMessage } from '../../utils/formatters';
-import { Plus, Download, RefreshCw, UploadCloud, Building2, Zap } from 'lucide-react';
+import { Plus, Download, RefreshCw, UploadCloud, Building2, Zap, Filter } from 'lucide-react';
 import axios from 'axios';
 
 export const ElectricityDataPage = () => {
@@ -39,7 +38,7 @@ export const ElectricityDataPage = () => {
       if (isVesit) {
         const token = localStorage.getItem('token');
         const vesitRes = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/electricity/vesit`,
+          `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'}/electricity/vesit`,
           {
             headers: { Authorization: `Bearer ${token}` },
             params: { limit: 300 },
@@ -86,7 +85,7 @@ export const ElectricityDataPage = () => {
         Calculated_CO2e_kg: (item.units_consumed_kwh * 0.82).toFixed(2),
       }));
       reportService.exportToCSV(`VESIT_Electricity_Dataset_${Date.now()}.csv`, rows);
-      toast.success('VESIT electricity records exported as CSV.');
+      toast.success('VESIT electricity records exported to CSV.');
     } else {
       if (!electricityData.length) {
         toast.info('No electricity records to export.');
@@ -131,8 +130,8 @@ export const ElectricityDataPage = () => {
       accessor: 'date',
       render: (row) => (
         <div>
-          <div className="font-bold text-slate-100">{row.month} {row.year}</div>
-          <div className="text-[10px] text-slate-400 font-mono">{row.date}</div>
+          <div className="font-bold text-slate-900 dark:text-slate-100">{row.month} {row.year}</div>
+          <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{row.date}</div>
         </div>
       ),
     },
@@ -140,9 +139,7 @@ export const ElectricityDataPage = () => {
       header: 'Campus Wing / Sector',
       accessor: 'wing',
       render: (row) => (
-        <Badge
-          variant={row.wing === 'A Wing' ? 'cyan' : row.wing === 'B Wing' ? 'emerald' : 'amber'}
-        >
+        <Badge variant={row.wing?.includes('A Wing') ? 'blue' : row.wing?.includes('B Wing') ? 'orange' : 'purple'}>
           {row.wing}
         </Badge>
       ),
@@ -151,26 +148,17 @@ export const ElectricityDataPage = () => {
       header: 'Consumption (kWh)',
       accessor: 'units_consumed_kwh',
       render: (row) => (
-        <span className="font-mono font-bold text-slate-100">
-          {formatNumber(row.units_consumed_kwh)} <span className="text-slate-400 font-normal">kWh</span>
+        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+          {formatNumber(row.units_consumed_kwh)} kWh
         </span>
       ),
     },
     {
-      header: 'Amount Paid (₹)',
+      header: 'Billed Amount (INR)',
       accessor: 'amount_paid',
       render: (row) => (
-        <span className="font-mono text-slate-200">
+        <span className="font-mono text-slate-700 dark:text-slate-300">
           {row.amount_paid ? `₹${formatNumber(row.amount_paid)}` : '—'}
-        </span>
-      ),
-    },
-    {
-      header: 'Billing Demand',
-      accessor: 'billing_demand',
-      render: (row) => (
-        <span className="font-mono text-slate-400 text-xs">
-          {row.billing_demand ? `${row.billing_demand} KVA` : '—'}
         </span>
       ),
     },
@@ -178,91 +166,45 @@ export const ElectricityDataPage = () => {
       header: 'Power Factor',
       accessor: 'power_factor',
       render: (row) => (
-        <span className="font-mono text-slate-400 text-xs">
-          {row.power_factor ?? '—'}
+        <span className="font-mono text-slate-600 dark:text-slate-400 text-xs">
+          {row.power_factor ? row.power_factor.toFixed(2) : '—'}
         </span>
       ),
     },
     {
-      header: 'Calculated Scope 2 CO₂e',
+      header: 'Computed Scope 2 CO₂e',
       accessor: 'units_consumed_kwh',
       className: 'text-right',
-      cellClassName: 'text-right',
-      render: (row) => (
-        <span className="font-mono font-bold text-emerald-400">
-          {formatCarbon(row.units_consumed_kwh * 0.82)}
-        </span>
-      ),
+      cellClassName: 'text-right font-mono font-bold text-emerald-600 dark:text-emerald-400',
+      render: (row) => formatCarbon(row.units_consumed_kwh * 0.82),
     },
   ];
 
   // Demo Table Columns
   const demoColumns = [
-    {
-      header: 'ID',
-      accessor: 'id',
-      className: 'w-16',
-      render: (row) => <span className="font-mono text-slate-500">#{row.id}</span>,
-    },
+    { header: 'ID', accessor: 'id', render: (r) => <span className="font-mono text-slate-500">#{r.id}</span> },
     {
       header: 'Department',
       accessor: 'department_id',
-      render: (row) => {
-        const dept = departments.find((d) => d.id === row.department_id);
-        return (
-          <div>
-            <div className="font-semibold text-slate-200">
-              {dept ? dept.name : `Department #${row.department_id}`}
-            </div>
-            {dept && <div className="text-[10px] text-slate-400 font-mono">{dept.code}</div>}
-          </div>
-        );
+      render: (r) => {
+        const d = departments.find((dept) => dept.id === r.department_id);
+        return d ? `${d.name} (${d.code})` : `#${r.department_id}`;
       },
     },
+    { header: 'Consumption (kWh)', accessor: 'kwh', render: (r) => `${formatNumber(r.kwh)} kWh` },
+    { header: 'Source', accessor: 'source', render: (r) => <Badge variant="cyan">{r.source}</Badge> },
+    { header: 'Timestamp', accessor: 'timestamp', render: (r) => formatDate(r.timestamp) },
     {
-      header: 'Consumption (kWh)',
+      header: 'Computed Scope 2 CO₂e',
       accessor: 'kwh',
-      render: (row) => (
-        <span className="font-mono font-bold text-slate-100">
-          {formatNumber(row.kwh)} <span className="text-slate-400 font-normal">kWh</span>
-        </span>
-      ),
-    },
-    {
-      header: 'Power Source',
-      accessor: 'source',
-      render: (row) => (
-        <Badge
-          variant={row.source === 'Solar' ? 'emerald' : row.source === 'DG Set' ? 'amber' : 'cyan'}
-        >
-          {row.source}
-        </Badge>
-      ),
-    },
-    {
-      header: 'Date & Time',
-      accessor: 'timestamp',
-      render: (row) => (
-        <span className="text-slate-400 text-[11px] font-mono">
-          {formatDate(row.timestamp, true)}
-        </span>
-      ),
-    },
-    {
-      header: 'Estimated Carbon (CO₂e)',
-      accessor: 'calculated_emission',
       className: 'text-right',
-      cellClassName: 'text-right',
-      render: (row) => (
-        <span className="font-mono font-bold text-emerald-400">
-          {formatCarbon(row.kwh * 0.82)}
-        </span>
-      ),
+      cellClassName: 'text-right font-mono font-bold text-emerald-600 dark:text-emerald-400',
+      render: (r) => formatCarbon(r.kwh * 0.82),
     },
   ];
 
   if (loading) {
-    return <LoadingSpinner size="lg" text="Loading Campus Electricity Records..." className="min-h-[50vh]" />;
+    return <LoadingSpinner size="lg" text="Loading Verified Electricity Datasets..." className="min-h-[50vh]" />;
   }
 
   if (error) {
@@ -271,157 +213,169 @@ export const ElectricityDataPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Top Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-100 tracking-tight">
-              {isVesit ? 'VESIT Official Electricity Records (2022–2026)' : 'Electricity Consumption Records'}
-            </h2>
-            <Badge variant={isVesit ? 'emerald' : 'cyan'}>Scope 2</Badge>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+              Electricity Telemetry & Billing Ledger
+            </h1>
+            <Badge variant={isVesit ? 'emerald' : 'amber'}>
+              {isVesit ? 'VESIT Official Records' : 'Test Set'}
+            </Badge>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            {isVesit
-              ? 'Actual utility meter logs across A Wing (350 KVA), B Wing (175 KVA), and Construction.'
-              : 'Verified smart-meter & utility grid energy consumption logged across academic zones.'}
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Historical electricity consumption, billing demand, power factor, and Scope 2 emissions.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-850 hover:bg-slate-800 text-slate-300 text-xs font-semibold border border-slate-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-slate-700 transition-colors shadow-sm"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3.5 h-3.5" />
             Export CSV
           </button>
 
-          {isVesit ? (
+          <button
+            onClick={() => setIsBillUploadOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition-colors"
+          >
+            <UploadCloud className="w-4 h-4" />
+            Upload Bill
+          </button>
+
+          {(isAdmin || isMaintenance) && (
             <button
-              onClick={() => setIsBillUploadOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-950/40"
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold shadow-sm transition-colors"
             >
-              <UploadCloud className="w-4 h-4" />
-              Upload Utility Bill
+              <Plus className="w-4 h-4" />
+              Add Entry
             </button>
-          ) : (
-            (isAdmin || isMaintenance) && (
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition-all shadow-lg shadow-brand-900/40"
-              >
-                <Plus className="w-4 h-4" />
-                New Entry
-              </button>
-            )
           )}
         </div>
       </div>
 
-      {/* Summary Banner & Filters */}
+      {/* KPI Highlights Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="glass-card rounded-2xl p-4 border border-slate-800">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-            Total Filtered Energy
+        <div className="card-surface p-4 border-l-4 border-l-sky-500">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">
+            Filtered Energy Consumption
           </div>
-          <div className="text-xl font-extrabold text-slate-100 font-mono mt-1">
-            {formatNumber(totalKwh)} kWh
+          <div className="text-2xl font-black text-slate-900 dark:text-slate-100 font-mono mt-1">
+            {formatNumber(totalKwh)} <span className="text-xs font-normal text-slate-500">kWh</span>
+          </div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-mono">
+            {isVesit ? `${filteredVesit.length} Records matched` : `${filteredDemo.length} Entries matched`}
           </div>
         </div>
 
-        <div className="glass-card rounded-2xl p-4 border border-slate-800">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-            Total Computed Scope 2 Carbon
+        <div className="card-surface p-4 border-l-4 border-l-emerald-500">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">
+            Scope 2 Carbon Generated
           </div>
-          <div className="text-xl font-extrabold text-emerald-400 font-mono mt-1">
+          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1">
             {formatCarbon(totalCarbon)}
           </div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-mono">
+            CEA Factor: 0.82 kgCO₂e/kWh
+          </div>
         </div>
 
-        <div className="glass-card rounded-2xl p-4 border border-slate-800 flex items-center justify-between">
-          {isVesit ? (
-            <div className="flex gap-2 w-full">
-              <div className="flex-1">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Year</div>
-                <select
-                  value={selectedYearFilter}
-                  onChange={(e) => setSelectedYearFilter(e.target.value)}
-                  className="w-full mt-1 px-2.5 py-1 rounded-lg bg-slate-950/80 border border-slate-700 text-xs text-slate-200 font-mono focus:outline-none"
-                >
-                  <option value="ALL">All Years</option>
-                  <option value="2026">2026</option>
-                  <option value="2025">2025</option>
-                  <option value="2024">2024</option>
-                  <option value="2023">2023</option>
-                  <option value="2022">2022</option>
-                </select>
-              </div>
-
-              <div className="flex-1">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Wing</div>
-                <select
-                  value={selectedWingFilter}
-                  onChange={(e) => setSelectedWingFilter(e.target.value)}
-                  className="w-full mt-1 px-2.5 py-1 rounded-lg bg-slate-950/80 border border-slate-700 text-xs text-slate-200 font-mono focus:outline-none"
-                >
-                  <option value="ALL">All Wings</option>
-                  <option value="A Wing">A Wing (350 KVA)</option>
-                  <option value="B Wing">B Wing (175 KVA)</option>
-                  <option value="Construction">Construction</option>
-                </select>
-              </div>
-            </div>
-          ) : (
-            <div className="w-full">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                Department Filter
-              </div>
-              <select
-                value={selectedDeptFilter}
-                onChange={(e) => setSelectedDeptFilter(e.target.value)}
-                className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-slate-950/80 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-brand-500 font-semibold"
-              >
-                <option value="ALL">All Campus Departments</option>
-                {departments.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.name} ({dept.code})
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+        <div className="card-surface p-4 border-l-4 border-l-purple-500">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">
+            Active Dataset Context
+          </div>
+          <div className="text-2xl font-black text-purple-600 dark:text-purple-400 font-mono mt-1">
+            {isVesit ? 'VESIT Campus' : `${departments.length} Zones`}
+          </div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-mono">
+            {isVesit ? '350 KVA (A) + 175 KVA (B)' : 'Multi-department demo feed'}
+          </div>
         </div>
       </div>
 
-      {/* Data Table */}
+      {/* Filter Toolbar */}
+      {isVesit ? (
+        <div className="card-surface p-4 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono mr-1">
+              <Filter className="w-3.5 h-3.5" />
+              Filters:
+            </div>
+
+            {/* Year Filter */}
+            <select
+              value={selectedYearFilter}
+              onChange={(e) => setSelectedYearFilter(e.target.value)}
+              className="px-3 py-1.5 rounded-xl input-surface text-xs font-semibold font-mono"
+            >
+              <option value="ALL">All Years (2022–2026)</option>
+              <option value="2026">Year 2026</option>
+              <option value="2025">Year 2025</option>
+              <option value="2024">Year 2024</option>
+              <option value="2023">Year 2023</option>
+              <option value="2022">Year 2022</option>
+            </select>
+
+            {/* Wing Filter */}
+            <select
+              value={selectedWingFilter}
+              onChange={(e) => setSelectedWingFilter(e.target.value)}
+              className="px-3 py-1.5 rounded-xl input-surface text-xs font-semibold font-mono"
+            >
+              <option value="ALL">All Campus Wings</option>
+              <option value="A Wing">A Wing (350 KVA Demand)</option>
+              <option value="B Wing">B Wing (175 KVA Demand)</option>
+            </select>
+          </div>
+
+          <button
+            onClick={() => {
+              setSelectedYearFilter('ALL');
+              setSelectedWingFilter('ALL');
+            }}
+            className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-semibold"
+          >
+            Clear Filters
+          </button>
+        </div>
+      ) : (
+        <div className="card-surface p-4 flex items-center gap-4">
+          <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
+            Department Filter:
+          </label>
+          <select
+            value={selectedDeptFilter}
+            onChange={(e) => setSelectedDeptFilter(e.target.value)}
+            className="px-3 py-1.5 rounded-xl input-surface text-xs font-semibold font-mono"
+          >
+            <option value="ALL">All Monitored Departments</option>
+            {departments.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name} ({d.code})
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Main Table */}
       <DataTable
         columns={isVesit ? vesitColumns : demoColumns}
         data={isVesit ? filteredVesit : filteredDemo}
-        searchPlaceholder={isVesit ? "Search VESIT records (month, wing, kWh)..." : "Filter electricity records..."}
-        emptyMessage="No electricity records found for this selection."
+        searchPlaceholder="Search by month, wing, or ID..."
+        searchField={isVesit ? 'month' : 'source'}
       />
 
-      {/* Upload Electricity Bill Modal (VESIT) */}
-      <Modal
-        isOpen={isBillUploadOpen}
-        onClose={() => setIsBillUploadOpen(false)}
-        title="Upload Electricity Bill & Compute Carbon"
-        subtitle="Automatic entity extraction, historical validation, and deterministic Scope 2 calculation."
-      >
-        <BillUploadWorkflow
-          onSuccess={() => {
-            loadData();
-          }}
-          onCancel={() => setIsBillUploadOpen(false)}
-        />
-      </Modal>
-
-      {/* Manual Entry Modal (Demo) */}
+      {/* Manual Entry Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Record Campus Electricity Consumption"
-        subtitle="Backend synchronously computes Scope 2 carbon using active CEA emission factor (0.82 kgCO2e/kWh)."
+        title="Record Electricity Consumption"
+        subtitle="Input metered kWh consumption for automated Scope 2 carbon calculation."
       >
         <ElectricityForm
           departments={departments}
@@ -430,6 +384,23 @@ export const ElectricityDataPage = () => {
             loadData();
           }}
           onCancel={() => setIsModalOpen(false)}
+        />
+      </Modal>
+
+      {/* Bill Upload Modal */}
+      <Modal
+        isOpen={isBillUploadOpen}
+        onClose={() => setIsBillUploadOpen(false)}
+        title="Upload Utility Electricity Bill"
+        subtitle="Upload verified monthly MSEDCL/Tata Power electricity bills with automated validation."
+        maxWidth="max-w-2xl"
+      >
+        <BillUploadWorkflow
+          onSuccess={() => {
+            setIsBillUploadOpen(false);
+            loadData();
+          }}
+          onCancel={() => setIsBillUploadOpen(false)}
         />
       </Modal>
     </div>

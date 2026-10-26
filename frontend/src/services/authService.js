@@ -20,6 +20,25 @@ export const authService = {
   },
 
   /**
+   * Register a new user and receive a JWT access token
+   * Backend endpoint: POST /api/v1/auth/register
+   * Payload: { name, email, password, role }
+   */
+  register: async (userData) => {
+    const response = await apiClient.post('/auth/register', userData);
+    return response.data; // { access_token, token_type, user }
+  },
+
+  /**
+   * Fetch current authenticated user profile from backend
+   * Endpoint: GET /api/v1/auth/me
+   */
+  getMe: async () => {
+    const response = await apiClient.get('/auth/me');
+    return response.data; // { id, email, name, role, is_active }
+  },
+
+  /**
    * Store token and user details in localStorage
    */
   setSession: (token, user) => {

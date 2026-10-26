@@ -47,12 +47,12 @@ export const EmissionFactorForm = ({ onSuccess, onCancel }) => {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-            GHG Scope <span className="text-rose-400">*</span>
+          <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+            GHG Scope <span className="text-rose-500">*</span>
           </label>
           <select
             {...register('category', { required: 'Scope category is required' })}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/60 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-brand-500 transition-colors"
+            className="w-full px-3.5 py-2.5 rounded-xl input-surface text-xs focus:outline-none"
           >
             <option value="Scope 1">Scope 1 (Direct Combustion & Fleet)</option>
             <option value="Scope 2">Scope 2 (Purchased Electricity)</option>
@@ -61,22 +61,22 @@ export const EmissionFactorForm = ({ onSuccess, onCancel }) => {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-            Subcategory / Fuel <span className="text-rose-400">*</span>
+          <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+            Subcategory / Fuel <span className="text-rose-500">*</span>
           </label>
           <input
             type="text"
             placeholder="e.g. Grid Electricity, Diesel, LPG"
             {...register('subcategory', { required: 'Subcategory is required' })}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/60 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-brand-500 transition-colors"
+            className="w-full px-3.5 py-2.5 rounded-xl input-surface text-xs focus:outline-none"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-            Factor Value <span className="text-rose-400">*</span>
+          <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+            Factor Value <span className="text-rose-500">*</span>
           </label>
           <input
             type="number"
@@ -86,68 +86,68 @@ export const EmissionFactorForm = ({ onSuccess, onCancel }) => {
               required: 'Factor value is required',
               min: { value: 0.0001, message: 'Must be > 0' }
             })}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/60 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-brand-500 transition-colors font-mono"
+            className="w-full px-3.5 py-2.5 rounded-xl input-surface text-xs focus:outline-none font-mono"
           />
-          {errors.factor_value && <p className="text-[11px] text-rose-400 mt-1">{errors.factor_value.message}</p>}
+          {errors.factor_value && <p className="text-[11px] text-rose-500 mt-1">{errors.factor_value.message}</p>}
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-            Activity Unit <span className="text-rose-400">*</span>
+          <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+            Activity Unit <span className="text-rose-500">*</span>
           </label>
           <input
             type="text"
             placeholder="e.g. kWh, Liters, kg"
             {...register('activity_unit', { required: 'Unit is required' })}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/60 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-brand-500 transition-colors font-mono"
+            className="w-full px-3.5 py-2.5 rounded-xl input-surface text-xs focus:outline-none font-mono"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-            Factor Unit <span className="text-rose-400">*</span>
+          <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+            Factor Unit <span className="text-rose-500">*</span>
           </label>
           <input
             type="text"
             placeholder="e.g. kgCO2e/kWh"
             {...register('factor_unit', { required: 'Factor unit is required' })}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/60 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-brand-500 transition-colors font-mono"
+            className="w-full px-3.5 py-2.5 rounded-xl input-surface text-xs focus:outline-none font-mono"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-            Regulatory Source <span className="text-rose-400">*</span>
+          <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+            Regulatory Source <span className="text-rose-500">*</span>
           </label>
           <input
             type="text"
             placeholder="e.g. Central Electricity Authority (CEA) / IPCC"
             {...register('source', { required: 'Source is required' })}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/60 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-brand-500 transition-colors"
+            className="w-full px-3.5 py-2.5 rounded-xl input-surface text-xs focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
             Region / Grid Zone
           </label>
           <input
             type="text"
             placeholder="e.g. India National Grid / Northern Region"
             {...register('region')}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/60 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-brand-500 transition-colors"
+            className="w-full px-3.5 py-2.5 rounded-xl input-surface text-xs focus:outline-none"
           />
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+      <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border-subtle)]">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            className="px-4 py-2 rounded-xl text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
           >
             Cancel
           </button>
@@ -155,7 +155,7 @@ export const EmissionFactorForm = ({ onSuccess, onCancel }) => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition-all shadow-lg shadow-brand-900/40 disabled:opacity-50"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-900/20 disabled:opacity-50"
         >
           {isSubmitting ? (
             <>

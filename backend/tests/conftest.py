@@ -7,11 +7,15 @@ from app.main import app
 from app.db.base import Base
 from app.api.dependencies import get_db
 
-# Use SQLite for testing to avoid touching production DB
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+from sqlalchemy.pool import StaticPool
+
+# Use in-memory SQLite with StaticPool for thread-safe test isolation
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

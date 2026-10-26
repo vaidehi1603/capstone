@@ -9,7 +9,7 @@ from app.models.user import User
 
 router = APIRouter()
 
-@router.get("/vesit", dependencies=[Depends(RoleChecker(["ADMIN", "VIEWER"]))])
+@router.get("/vesit", dependencies=[Depends(RoleChecker(["ADMIN", "VIEWER", "MAINTENANCE", "HOD"]))])
 def read_vesit_electricity_records(
     year: Optional[int] = Query(None, description="Filter by year (e.g. 2022-2026)"),
     wing: Optional[str] = Query(None, description="Filter by wing ('A Wing', 'B Wing')"),

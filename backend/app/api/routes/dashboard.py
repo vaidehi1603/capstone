@@ -6,7 +6,7 @@ from app.services import dashboard_service
 
 router = APIRouter()
 
-@router.get("/", response_model=FullDashboardResponse, dependencies=[Depends(RoleChecker(["ADMIN", "VIEWER"]))])
+@router.get("/", response_model=FullDashboardResponse, dependencies=[Depends(RoleChecker(["ADMIN", "VIEWER", "MAINTENANCE", "HOD"]))])
 def get_full_dashboard(db: Session = Depends(get_db)):
     """
     Retrieve all dashboard metrics: Overall, Building, Appliance, Solar, Waste, Sustainability.

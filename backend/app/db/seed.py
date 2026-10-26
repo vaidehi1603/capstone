@@ -23,19 +23,27 @@ def seed_data(db: Session):
     
     db.commit()
 
-    # Seed Admin User
-    admin_email = "admin@example.com"
-    existing_admin = db.query(User).filter(User.email == admin_email).first()
-    if not existing_admin:
-        admin_user = User(
-            name="System Admin",
-            email=admin_email,
-            password_hash=get_password_hash("admin123"), 
-            role="ADMIN",
-            is_active=True
-        )
-        db.add(admin_user)
-        db.commit()
+    # Seed Demo Users for all evaluation roles
+    demo_users = [
+        {"name": "System Admin", "email": "admin@example.com", "role": "ADMIN", "dept_id": None},
+        {"name": "Facility Maintenance", "email": "maintenance@vesit.edu", "role": "MAINTENANCE", "dept_id": None},
+        {"name": "Dr. Department Head", "email": "hod@vesit.edu", "role": "HOD", "dept_id": 1},
+        {"name": "Sustainability Auditor", "email": "viewer@vesit.edu", "role": "VIEWER", "dept_id": None},
+    ]
+
+    for u_info in demo_users:
+        existing_user = db.query(User).filter(User.email == u_info["email"]).first()
+        if not existing_user:
+            new_user = User(
+                name=u_info["name"],
+                email=u_info["email"],
+                password_hash=get_password_hash("admin123"),
+                role=u_info["role"],
+                department_id=u_info["dept_id"],
+                is_active=True
+            )
+            db.add(new_user)
+    db.commit()
 
     # Seed Emission Factors
     existing_ef = db.query(EmissionFactor).filter(EmissionFactor.category == "Scope 2").first()

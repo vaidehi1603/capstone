@@ -3,70 +3,199 @@
 @tailwind utilities;
 
 @layer base {
+  /* LIGHT THEME TOKENS (Default root) */
   :root {
-    --bg-primary: #090d16;
-    --bg-secondary: #0f172a;
-    --bg-card: rgba(15, 23, 42, 0.75);
-    --border-card: rgba(51, 65, 85, 0.4);
+    --bg-main: #F4F7FB;
+    --bg-secondary: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --bg-elevated: #EDF2F8;
+    --text-primary: #172033;
+    --text-secondary: #5D6B82;
+    --text-muted: #8896AB;
+    --border-color: #DCE4EE;
+    --border-subtle: #E8EEF5;
+    --primary-accent: #047857;
+    --primary-accent-hover: #065F46;
+    --secondary-accent: #0369A1;
+    --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+    --card-shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+    
+    /* Chart Tokens Light */
+    --chart-grid: #E2E8F0;
+    --chart-axis: #5D6B82;
+    --chart-tooltip-bg: #FFFFFF;
+    --chart-tooltip-border: #DCE4EE;
+    --chart-tooltip-text: #172033;
+  }
+
+  /* DARK THEME TOKENS */
+  .dark {
+    --bg-main: #0B1020;
+    --bg-secondary: #111827;
+    --bg-card: #151F32;
+    --bg-elevated: #1B2940;
+    --text-primary: #F1F5F9;
+    --text-secondary: #A7B4C8;
+    --text-muted: #64748B;
+    --border-color: #29364B;
+    --border-subtle: #1F293D;
+    --primary-accent: #10B981;
+    --primary-accent-hover: #059669;
+    --secondary-accent: #38BDF8;
+    --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+    --card-shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    
+    /* Chart Tokens Dark */
+    --chart-grid: #29364B;
+    --chart-axis: #A7B4C8;
+    --chart-tooltip-bg: #151F32;
+    --chart-tooltip-border: #29364B;
+    --chart-tooltip-text: #F1F5F9;
   }
 
   body {
-    background-color: var(--bg-primary);
-    color: #f1f5f9;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
-  /* Custom modern scrollbar */
+  /* Custom modern scrollbar adapted to both themes */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #0b1120;
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #334155;
+    background: var(--border-color);
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #475569;
+    background: var(--text-muted);
   }
 }
 
 @layer components {
-  /* Glass Card */
+  /* Surface classes for unified theming */
+  .app-bg {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+  }
+
+  .app-header {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+  }
+
+  .app-sidebar {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+  }
+
+  .card-surface {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+    border-radius: 1rem;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card-surface-hover {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card-surface-hover:hover {
+    border-color: var(--primary-accent);
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-2px);
+  }
+
+  .elevated-surface {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .input-surface {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .input-surface:focus {
+    outline: none;
+    border-color: var(--primary-accent);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  }
+  .input-surface::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.65;
+  }
+  .input-surface option {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+  }
+
+  /* Retain glass-card backwards compatibility but wire to design tokens */
   .glass-card {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(51, 65, 85, 0.45);
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+    border-radius: 1rem;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
   .glass-card-hover {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .glass-card-hover:hover {
-    border-color: rgba(16, 185, 129, 0.4);
-    box-shadow: 0 8px 30px -4px rgba(16, 185, 129, 0.15);
+    border-color: var(--primary-accent);
+    box-shadow: var(--card-shadow-hover);
     transform: translateY(-2px);
   }
 
-  /* Glowing Accent */
-  .glow-emerald {
-    box-shadow: 0 0 25px -3px rgba(16, 185, 129, 0.35);
+  /* Accessible badges */
+  .badge-emerald {
+    background-color: rgba(16, 185, 129, 0.12);
+    color: #047857;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+  .dark .badge-emerald {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #34D399;
+    border-color: rgba(16, 185, 129, 0.3);
   }
 
-  /* Modern Gradient Text */
-  .text-gradient-emerald {
-    background: linear-gradient(135deg, #6ee7b7 0%, #10b981 50%, #059669 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+  .badge-blue {
+    background-color: rgba(2, 132, 199, 0.12);
+    color: #0369A1;
+    border: 1px solid rgba(2, 132, 199, 0.3);
+  }
+  .dark .badge-blue {
+    background-color: rgba(56, 189, 248, 0.15);
+    color: #38BDF8;
+    border-color: rgba(56, 189, 248, 0.3);
   }
 
-  .text-gradient-sky {
-    background: linear-gradient(135deg, #7dd3fc 0%, #0284c7 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+  .badge-orange {
+    background-color: rgba(230, 159, 0, 0.12);
+    color: #B45309;
+    border: 1px solid rgba(230, 159, 0, 0.35);
+  }
+  .dark .badge-orange {
+    background-color: rgba(230, 159, 0, 0.15);
+    color: #FBBF24;
+    border-color: rgba(230, 159, 0, 0.3);
+  }
+
+  .badge-purple {
+    background-color: rgba(109, 91, 208, 0.12);
+    color: #5B21B6;
+    border: 1px solid rgba(109, 91, 208, 0.3);
+  }
+  .dark .badge-purple {
+    background-color: rgba(109, 91, 208, 0.15);
+    color: #A78BFA;
+    border-color: rgba(109, 91, 208, 0.3);
   }
 }

@@ -9,22 +9,53 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize session from localStorage
+  // Initialize and verify session from localStorage & backend
   useEffect(() => {
-    try {
-      const storedToken = authService.getToken();
-      const storedUser = authService.getCurrentUser();
+    const initializeAuth = async () => {
+      try {
+        const storedToken = authService.getToken();
+        const storedUser = authService.getCurrentUser();
 
-      if (storedToken && storedUser) {
-        setToken(storedToken);
-        setUser(storedUser);
+        if (storedToken) {
+          setToken(storedToken);
+          // Set cached user immediately to prevent flash
+          if (storedUser) {
+            setUser(storedUser);
+          }
+          // Validate and refresh with backend /auth/me
+          try {
+            const verifiedProfile = await authService.getMe();
+            if (verifiedProfile && verifiedProfile.is_active) {
+              const freshUserData = {
+                id: verifiedProfile.id,
+                email: verifiedProfile.email,
+                name: verifiedProfile.name || verifiedProfile.email.split('@')[0],
+                role: verifiedProfile.role,
+                department_id: verifiedProfile.department_id || (verifiedProfile.role === USER_ROLES.ADMIN ? null : 1),
+              };
+              setUser(freshUserData);
+              authService.setSession(storedToken, freshUserData);
+            }
+          } catch (meError) {
+            // If token rejected with 401 or network error
+            if (meError.response && meError.response.status === 401) {
+              authService.clearSession();
+              setToken(null);
+              setUser(null);
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Failed to restore auth session', e);
+        authService.clearSession();
+        setToken(null);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (e) {
-      console.error('Failed to restore auth session', e);
-      authService.clearSession();
-    } finally {
-      setIsLoading(false);
-    }
+    };
+
+    initializeAuth();
   }, []);
 
   /**
@@ -35,30 +66,59 @@ export const AuthProvider = ({ children }) => {
     const data = await authService.login(email, password);
     const accessToken = data.access_token;
 
-    // 2. Derive user info
-    // For admin@example.com, default role is ADMIN. If roleOverride passed or derived from email:
-    let role = roleOverride || USER_ROLES.VIEWER;
-    if (email.toLowerCase().includes('admin')) {
-      role = USER_ROLES.ADMIN;
-    } else if (email.toLowerCase().includes('maintenance') || email.toLowerCase().includes('facility')) {
-      role = USER_ROLES.MAINTENANCE;
-    } else if (email.toLowerCase().includes('hod')) {
-      role = USER_ROLES.HOD;
+    // Set token immediately so subsequent getMe() attaches it
+    localStorage.setItem('token', accessToken);
+
+    // 2. Fetch authenticated profile from backend /auth/me
+    let backendUser = null;
+    try {
+      backendUser = await authService.getMe();
+    } catch {
+      // Fallback if /auth/me is temporarily unreachable
     }
 
+    const role = roleOverride || backendUser?.role || (email.toLowerCase().includes('admin') ? USER_ROLES.ADMIN : USER_ROLES.VIEWER);
+
     const userData = {
-      email,
-      name: email.split('@')[0].replace('.', ' ').toUpperCase(),
+      id: backendUser?.id || 1,
+      email: backendUser?.email || email,
+      name: backendUser?.name || email.split('@')[0].replace('.', ' ').toUpperCase(),
       role: role,
-      department_id: role === USER_ROLES.ADMIN ? null : 1, // Default dept for non-admins
+      department_id: backendUser?.department_id || (role === USER_ROLES.ADMIN ? null : 1),
     };
 
-    // 3. Persist
+    // 3. Persist session
     authService.setSession(accessToken, userData);
     setToken(accessToken);
     setUser(userData);
 
     return { token: accessToken, user: userData };
+  };
+
+  /**
+   * Register and automatically authenticate new user
+   */
+  const signup = async (userData) => {
+    // 1. Call backend registration endpoint
+    const data = await authService.register(userData);
+    const accessToken = data.access_token;
+    const regUser = data.user;
+
+    localStorage.setItem('token', accessToken);
+
+    const userProfile = {
+      id: regUser.id,
+      email: regUser.email,
+      name: regUser.name || regUser.email.split('@')[0],
+      role: regUser.role,
+      department_id: regUser.department_id || (regUser.role === USER_ROLES.ADMIN ? null : 1),
+    };
+
+    authService.setSession(accessToken, userProfile);
+    setToken(accessToken);
+    setUser(userProfile);
+
+    return { token: accessToken, user: userProfile };
   };
 
   /**
@@ -95,6 +155,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: !!token,
     isLoading,
     login,
+    signup,
     logout,
     switchDemoRole,
     hasRole,

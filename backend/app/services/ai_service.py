@@ -1,3 +1,4 @@
+import os
 import logging
 import json
 import google.generativeai as genai
@@ -162,12 +163,11 @@ Each object MUST have exactly these keys:
             genai.configure(api_key=api_key)
 
         candidate_models = [
-            'gemini-3.5-flash-lite',
-            'gemini-flash-latest',
-            'gemini-3.1-flash-lite',
-            'gemini-flash-lite-latest',
             'gemini-2.5-flash',
-            'gemini-2.5-pro'
+            'gemini-flash-latest',
+            'gemini-3.5-flash-lite',
+            'gemini-2.5-pro',
+            'gemini-3.8-flash',
         ]
 
         text_response = None

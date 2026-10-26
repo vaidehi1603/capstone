@@ -167,8 +167,22 @@ class CarbonCalculatorAgent:
         success_count = 0
         failed_count = 0
 
-        # Clear previous emissions for VESIT to ensure clean recalculation
-        self.db.query(CarbonEmission).filter(CarbonEmission.category.ilike("%Electricity%")).delete()
+        # Clear previous calculation logs and emissions for clean recalculation
+        elec_ids = [
+            e.emission_id
+            for e in self.db.query(CarbonEmission.emission_id)
+            .filter(CarbonEmission.category.ilike("%Electricity%"))
+            .all()
+        ]
+        if elec_ids:
+            self.db.query(CarbonCalculationLog).filter(
+                CarbonCalculationLog.emission_id.in_(elec_ids)
+            ).delete(synchronize_session=False)
+            self.db.commit()
+
+        self.db.query(CarbonEmission).filter(
+            CarbonEmission.category.ilike("%Electricity%")
+        ).delete(synchronize_session=False)
         self.db.commit()
 
         for rec in records:

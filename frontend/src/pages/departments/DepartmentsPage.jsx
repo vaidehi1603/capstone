@@ -8,7 +8,7 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
 import { Badge } from '../../components/common/Badge';
 import { formatDate, extractErrorMessage } from '../../utils/formatters';
-import { Plus, RefreshCw } from 'lucide-react';
+import { Plus, RefreshCw, Building2, Layers } from 'lucide-react';
 
 export const DepartmentsPage = () => {
   const { isAdmin } = useAuth();
@@ -45,7 +45,7 @@ export const DepartmentsPage = () => {
       header: 'Department Name',
       accessor: 'name',
       render: (row) => (
-        <div className="font-bold text-slate-200">{row.name}</div>
+        <div className="font-bold text-slate-900 dark:text-slate-100">{row.name}</div>
       ),
     },
     {
@@ -57,7 +57,7 @@ export const DepartmentsPage = () => {
       header: 'Description',
       accessor: 'description',
       render: (row) => (
-        <span className="text-slate-400 max-w-md block truncate">
+        <span className="text-slate-600 dark:text-slate-400 max-w-md block truncate">
           {row.description || '—'}
         </span>
       ),
@@ -66,7 +66,7 @@ export const DepartmentsPage = () => {
       header: 'Registered Date',
       accessor: 'created_at',
       render: (row) => (
-        <span className="text-slate-400 font-mono text-[11px]">
+        <span className="text-slate-500 dark:text-slate-400 font-mono text-[11px]">
           {formatDate(row.created_at)}
         </span>
       ),
@@ -86,11 +86,11 @@ export const DepartmentsPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-100 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
             Campus Departments & Facilities
-          </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Registered academic, administrative, and residential campus carbon reporting zones.
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Registered academic, administrative, and laboratory campus carbon accounting zones.
           </p>
         </div>
 
@@ -98,14 +98,14 @@ export const DepartmentsPage = () => {
           <button
             onClick={loadDepartments}
             title="Refresh"
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
           {isAdmin && (
             <button
               onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition-all shadow-lg shadow-brand-900/40"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition-all"
             >
               <Plus className="w-4 h-4" />
               Add Department
@@ -119,46 +119,43 @@ export const DepartmentsPage = () => {
         {departments.map((dept) => (
           <div
             key={dept.id}
-            className="glass-card glass-card-hover rounded-2xl p-5 border border-slate-800 flex flex-col justify-between"
+            className="card-surface card-surface-hover p-5 flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center font-mono font-bold text-xs">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 border border-purple-200 dark:bg-purple-500/10 dark:border-purple-500/30 dark:text-purple-400 flex items-center justify-center font-mono font-bold text-xs">
                   {dept.code}
                 </div>
                 <Badge variant="purple">Active Node</Badge>
               </div>
-              <h3 className="text-base font-bold text-slate-100 mb-1">{dept.name}</h3>
-              <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                {dept.description || 'Standard academic department zone.'}
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">{dept.name}</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                {dept.description || 'Standard academic department carbon zone.'}
               </p>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+            <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-mono">
               <span>Department ID: #{dept.id}</span>
-              <span className="font-mono">{formatDate(dept.created_at)}</span>
+              <span>{formatDate(dept.created_at)}</span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Departments Table */}
-      <div className="mt-6">
-        <h3 className="text-sm font-bold text-slate-200 mb-3">Department Registry Table</h3>
-        <DataTable
-          columns={columns}
-          data={departments}
-          searchPlaceholder="Search departments by name..."
-          emptyMessage="No departments found."
-        />
-      </div>
+      {/* Compact Registry Table */}
+      <DataTable
+        columns={columns}
+        data={departments}
+        searchPlaceholder="Search departments by name or code..."
+        searchField="name"
+      />
 
       {/* Add Department Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Register New Campus Department"
-        subtitle="Adds a new monitored department or facility zone to the campus GHG inventory."
+        title="Add Campus Department"
+        subtitle="Register a new academic or operational department zone for carbon footprint allocation."
       >
         <DepartmentForm
           onSuccess={() => {

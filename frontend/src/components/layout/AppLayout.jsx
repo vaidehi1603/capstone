@@ -7,12 +7,12 @@ export const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen app-bg transition-colors duration-200 flex flex-col">
       {/* Sidebar Navigation */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content Area */}
-      <div className="lg:pl-64 flex flex-col flex-1 min-w-0">
+      <div className="lg:pl-64 flex flex-col flex-1 min-w-0 transition-all duration-200">
         {/* Sticky Topbar */}
         <Topbar onOpenSidebar={() => setSidebarOpen(true)} />
 

@@ -10,7 +10,7 @@ router = APIRouter()
 class RecommendationRequest(BaseModel):
     building_identifier: Optional[str] = "VESIT Chembur Campus"
 
-@router.get("/recommendations", dependencies=[Depends(RoleChecker(["ADMIN", "VIEWER"]))])
+@router.get("/recommendations", dependencies=[Depends(RoleChecker(["ADMIN", "VIEWER", "HOD", "MAINTENANCE"]))])
 async def get_ai_recommendations_get(
     building: Optional[str] = Query("VESIT Chembur Campus", description="Building/Facility name"),
     db: Session = Depends(get_db)
@@ -21,7 +21,7 @@ async def get_ai_recommendations_get(
     result = await ai_service.generate_recommendations(db, building_identifier=building)
     return {"recommendations": result}
 
-@router.post("/recommendations", dependencies=[Depends(RoleChecker(["ADMIN", "VIEWER"]))])
+@router.post("/recommendations", dependencies=[Depends(RoleChecker(["ADMIN", "VIEWER", "HOD", "MAINTENANCE"]))])
 async def get_ai_recommendations_post(
     req: Optional[RecommendationRequest] = None, 
     db: Session = Depends(get_db)
@@ -33,7 +33,7 @@ async def get_ai_recommendations_post(
     result = await ai_service.generate_recommendations(db, building_identifier=building)
     return {"recommendations": result}
 
-@router.get("/forecast", dependencies=[Depends(RoleChecker(["ADMIN", "VIEWER"]))])
+@router.get("/forecast", dependencies=[Depends(RoleChecker(["ADMIN", "VIEWER", "HOD", "MAINTENANCE"]))])
 def get_ml_carbon_forecast(
     months_ahead: int = Query(6, ge=1, le=24, description="Forecasting horizon (months)"),
     wing: str = Query("ALL", description="Filter wing ('ALL', 'A Wing', 'B Wing')"),
@@ -47,7 +47,7 @@ def get_ml_carbon_forecast(
         raise HTTPException(status_code=400, detail=result["error"])
     return result
 
-@router.get("/forecast/solar", dependencies=[Depends(RoleChecker(["ADMIN", "VIEWER"]))])
+@router.get("/forecast/solar", dependencies=[Depends(RoleChecker(["ADMIN", "VIEWER", "HOD", "MAINTENANCE"]))])
 def get_ml_solar_forecast(db: Session = Depends(get_db)):
     """
     Get solar generation forecast powered by scikit-learn RandomForestRegressor.

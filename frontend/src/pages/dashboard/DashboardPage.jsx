@@ -53,7 +53,7 @@ export const DashboardPage = () => {
     setError(null);
     try {
       if (isVesit) {
-        // Fetch VESIT Actual Data
+        // Fetch VESIT Actual Records
         const [overviewRes, historyRes, annualRes, appRes] = await Promise.all([
           analyticsService.getDashboardOverview('VESIT_ACTUAL').catch(() => null),
           analyticsService.getVesitHistory().catch(() => ({ history: [] })),
@@ -61,11 +61,11 @@ export const DashboardPage = () => {
           analyticsService.getVesitAppliances().catch(() => null),
         ]);
         setOverview(overviewRes);
-        setVesitHistory(historyRes.history || []);
-        setVesitAnnual(annualRes.annual_trends || []);
+        setVesitHistory(historyRes?.history || []);
+        setVesitAnnual(annualRes?.annual_trends || []);
         setVesitAppliances(appRes);
       } else {
-        // Fetch Test/Demo Data
+        // Fetch Test / Demo Records
         const [overviewData, elecData, deptData] = await Promise.all([
           analyticsService.getDashboardOverview('TEST_DEMO').catch(() => ({
             total_campus_emissions_kgco2e: 0,
@@ -90,12 +90,12 @@ export const DashboardPage = () => {
     fetchDashboardData();
   }, [isVesit]);
 
-  // Filter history by year tab
+  // Filter history by selected year
   const filteredHistory = selectedYearFilter === 'ALL'
     ? vesitHistory
     : vesitHistory.filter((h) => String(h.year) === selectedYearFilter);
 
-  // Compute VESIT overall aggregates
+  // Computed Aggregates
   const totalVesitKwh = vesitHistory.reduce((acc, h) => acc + (h.total_kwh || 0), 0);
   const totalVesitCo2e = vesitHistory.reduce((acc, h) => acc + (h.total_co2e || 0), 0);
   const totalAWingKwh = vesitHistory.reduce((acc, h) => acc + (h.a_wing_kwh || 0), 0);
@@ -104,7 +104,7 @@ export const DashboardPage = () => {
   const avgTariff = totalVesitKwh > 0 ? (totalAmountPaid / totalVesitKwh).toFixed(2) : '14.50';
 
   if (loading) {
-    return <LoadingSpinner size="lg" text="Loading Carbon Intelligence Dashboard..." className="min-h-[60vh]" />;
+    return <LoadingSpinner size="lg" text="Loading Carbon Intelligence Executive Dashboard..." className="min-h-[60vh]" />;
   }
 
   if (error) {
@@ -117,34 +117,33 @@ export const DashboardPage = () => {
   if (isVesit) {
     return (
       <div className="space-y-6">
-        {/* Institute Banner */}
-        <div className="glass-card rounded-2xl p-6 border border-emerald-500/30 bg-gradient-to-r from-slate-900 via-slate-900/90 to-emerald-950/40 relative overflow-hidden">
-          <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        {/* Institute Executive Banner */}
+        <div className="card-surface p-6 relative overflow-hidden bg-gradient-to-r from-emerald-500/10 via-transparent to-sky-500/10 border-emerald-300 dark:border-emerald-500/30">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold uppercase tracking-wider font-mono">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40 text-[11px] font-bold uppercase tracking-wider font-mono">
                   Primary Institute Dataset
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 font-mono border border-slate-700">
-                  Jan 2022 – Jul 2026
+                <span className="px-2 py-0.5 rounded text-[10px] bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-mono border border-slate-200 dark:border-slate-700">
+                  Jan 2022 – Jul 2026 (55 Recorded Months)
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-100 mt-2 tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 mt-2 tracking-tight">
                 V.E.S. Institute of Technology (VESIT)
-              </h2>
-              <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+              </h1>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
                 Official Carbon Accounting & Scope 2 Energy Telemetry. Ingested from verified MSEDCL/Tata Power utility records across A Wing (350 KVA Contract Demand), B Wing (175 KVA Demand), and campus infrastructure.
               </p>
             </div>
 
-            <div className="flex items-center gap-2 self-start md:self-auto">
+            <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
               <NavLink
-                to="/data/upload"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-950/50"
+                to="/data/electricity"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md"
               >
                 <FileSpreadsheet className="w-4 h-4" />
-                Upload Electricity Bill
+                Manage Electricity Records
               </NavLink>
             </div>
           </div>
@@ -153,12 +152,13 @@ export const DashboardPage = () => {
         {/* Executive KPI Stat Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="Total Institute Carbon"
+            title="Total Campus Carbon"
             value={formatCarbon(totalVesitCo2e)}
-            subtitle={`${(totalVesitCo2e / 1000).toFixed(1)} Metric Tonnes CO₂e`}
+            subtitle={`${(totalVesitCo2e / 1000).toFixed(1)} Metric Tonnes CO₂e cumulative`}
             icon={Globe2}
             variant="emerald"
             badgeText="CEA 0.82 Factor"
+            tooltip="Calculated in compliance with ISO 14064 using Central Electricity Authority factor (0.82 kgCO2e/kWh)"
           />
 
           <StatCard
@@ -168,6 +168,7 @@ export const DashboardPage = () => {
             icon={Zap}
             variant="cyan"
             badgeText="Grid Metered"
+            tooltip="Sum of A Wing + B Wing + Construction utility meters"
           />
 
           <StatCard
@@ -177,6 +178,7 @@ export const DashboardPage = () => {
             icon={Building2}
             variant="purple"
             badgeText="A Wing Main"
+            tooltip="Main academic wing, classrooms, administrative offices, and main server room"
           />
 
           <StatCard
@@ -186,23 +188,24 @@ export const DashboardPage = () => {
             icon={Building2}
             variant="amber"
             badgeText="B Wing"
+            tooltip="Secondary academic wing and laboratory facilities"
           />
         </div>
 
-        {/* Annual Trends & YoY Comparison Strip */}
-        <div className="glass-card rounded-2xl p-5 border border-slate-800">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3 mb-4">
+        {/* Annual Trends & YoY Evolution Strip */}
+        <div className="card-surface p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
             <div>
-              <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
+              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 VESIT Annual Carbon & Electricity Evolution (2022–2026)
-              </h3>
-              <p className="text-[11px] text-slate-400">
-                Year-over-Year consumption shifts, grid expenses, and carbon emissions.
+              </h2>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Year-over-Year consumption shifts, grid expenditures, and calculated emissions.
               </p>
             </div>
-            <span className="text-[11px] font-mono text-slate-400">
-              Avg Tariff: <strong className="text-emerald-400">₹{avgTariff}/kWh</strong>
+            <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">
+              Avg Tariff: <strong className="text-emerald-600 dark:text-emerald-400">₹{avgTariff}/kWh</strong>
             </span>
           </div>
 
@@ -210,43 +213,43 @@ export const DashboardPage = () => {
             {vesitAnnual.map((y) => (
               <div
                 key={y.year}
-                className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition-all flex flex-col justify-between"
+                className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col justify-between"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-extrabold text-slate-100">{y.year}</span>
+                  <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100 font-mono">{y.year}</span>
                   {y.yoy_change_pct !== null && y.yoy_change_pct !== undefined ? (
                     <span
                       className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
                         y.yoy_change_pct >= 0
-                          ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                          : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                          ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20'
+                          : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'
                       }`}
                     >
                       {y.yoy_change_pct >= 0 ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
                       {Math.abs(y.yoy_change_pct)}% YoY
                     </span>
                   ) : (
-                    <span className="text-[10px] font-mono text-slate-500">Baseline</span>
+                    <span className="text-[10px] font-mono text-slate-400">Baseline</span>
                   )}
                 </div>
 
                 <div className="my-2.5 space-y-1">
-                  <div className="text-base font-black text-slate-100 font-mono">
-                    {formatNumber(y.total_kwh)} <span className="text-[10px] font-normal text-slate-400">kWh</span>
+                  <div className="text-base font-black text-slate-900 dark:text-slate-100 font-mono">
+                    {formatNumber(y.total_kwh)} <span className="text-[10px] font-normal text-slate-500">kWh</span>
                   </div>
-                  <div className="text-xs font-semibold text-emerald-400 font-mono">
-                    {y.total_co2e_tons} <span className="text-[10px] text-slate-400 font-normal">tCO₂e</span>
+                  <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 font-mono">
+                    {y.total_co2e_tons} <span className="text-[10px] text-slate-500 font-normal">tCO₂e</span>
                   </div>
                 </div>
 
-                <div className="border-t border-slate-800/80 pt-2 text-[10px] text-slate-400 space-y-0.5 font-mono">
+                <div className="border-t border-slate-200 dark:border-slate-800/80 pt-2 text-[10px] text-slate-500 dark:text-slate-400 space-y-0.5 font-mono">
                   <div className="flex justify-between">
-                    <span>Expense:</span>
-                    <span className="text-slate-300">₹{(y.total_expense_inr / 100000).toFixed(1)}L</span>
+                    <span>Expenditure:</span>
+                    <span className="text-slate-800 dark:text-slate-300">₹{(y.total_expense_inr / 100000).toFixed(1)}L</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Peak Month:</span>
-                    <span className="text-cyan-400">{y.max_month}</span>
+                    <span className="text-sky-600 dark:text-sky-400">{y.max_month}</span>
                   </div>
                 </div>
               </div>
@@ -254,28 +257,28 @@ export const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Monthly Wing Trends Chart + Year Tabs */}
-        <div className="glass-card rounded-2xl p-5 border border-slate-800">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3 mb-4">
+        {/* Monthly Wing Trends Chart + Year Selector */}
+        <div className="card-surface p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
             <div>
-              <h3 className="text-sm font-bold text-slate-100">
-                Monthly Wing Electricity Breakdown & Seasonal Cooling Trajectory
-              </h3>
-              <p className="text-[11px] text-slate-400">
-                Comparison of A Wing (350 KVA) vs B Wing (175 KVA) meter recordings (2022–2026).
+              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                Monthly Wing Electricity Breakdown & Seasonal Trajectory
+              </h2>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Comparison of A Wing (350 KVA) vs B Wing (175 KVA) meter recordings across 2022–2026.
               </p>
             </div>
 
-            {/* Year filter tabs */}
-            <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs font-mono">
+            {/* Year filter buttons */}
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-950/80 p-1 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-mono">
               {['ALL', '2026', '2025', '2024', '2023', '2022'].map((yr) => (
                 <button
                   key={yr}
                   onClick={() => setSelectedYearFilter(yr)}
                   className={`px-2.5 py-1 rounded-lg transition-colors ${
                     selectedYearFilter === yr
-                      ? 'bg-brand-600 text-white font-bold'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-emerald-600 text-white font-bold shadow-sm'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
                 >
                   {yr}
@@ -289,68 +292,68 @@ export const DashboardPage = () => {
 
         {/* VESIT Electrical Load & Asset Inventory Overview */}
         {vesitAppliances && (
-          <div className="glass-card rounded-2xl p-5 border border-slate-800">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3 mb-4">
+          <div className="card-surface p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
               <div>
-                <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-cyan-400" />
+                <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                   VESIT Electrical Asset & Appliance Inventory
-                </h3>
-                <p className="text-[11px] text-slate-400">
+                </h2>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   {vesitAppliances.total_equipment_count?.toLocaleString()} Monitored Electrical Devices across Campus
                 </p>
               </div>
-              <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-cyan-950/40 text-cyan-300 border border-cyan-800/40">
+              <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-sky-50 text-sky-800 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800/40">
                 Estimated Load ~{vesitAppliances.appliance_energy_estimation?.total_estimated_monthly_kwh?.toLocaleString()} kWh/mo
               </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-800/80 text-center">
-                <Wind className="w-5 h-5 text-cyan-400 mx-auto mb-1.5" />
-                <div className="text-lg font-black text-slate-100 font-mono">308</div>
-                <div className="text-[11px] font-bold text-slate-300">Air Conditioners</div>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800/80 text-center">
+                <Wind className="w-5 h-5 text-sky-600 dark:text-sky-400 mx-auto mb-1.5" />
+                <div className="text-lg font-black text-slate-900 dark:text-slate-100 font-mono">308</div>
+                <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Air Conditioners</div>
                 <div className="text-[9px] text-slate-500 font-mono mt-0.5">211x 2TR • 81x 1.5TR</div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-800/80 text-center">
-                <Lightbulb className="w-5 h-5 text-amber-400 mx-auto mb-1.5" />
-                <div className="text-lg font-black text-slate-100 font-mono">3,235</div>
-                <div className="text-[11px] font-bold text-slate-300">Lighting Fixtures</div>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800/80 text-center">
+                <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-400 mx-auto mb-1.5" />
+                <div className="text-lg font-black text-slate-900 dark:text-slate-100 font-mono">3,235</div>
+                <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Lighting Fixtures</div>
                 <div className="text-[9px] text-slate-500 font-mono mt-0.5">LEDs + 536 Tubes</div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-800/80 text-center">
-                <Laptop className="w-5 h-5 text-purple-400 mx-auto mb-1.5" />
-                <div className="text-lg font-black text-slate-100 font-mono">1,400</div>
-                <div className="text-[11px] font-bold text-slate-300">Computer Labs</div>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800/80 text-center">
+                <Laptop className="w-5 h-5 text-purple-600 dark:text-purple-400 mx-auto mb-1.5" />
+                <div className="text-lg font-black text-slate-900 dark:text-slate-100 font-mono">1,400</div>
+                <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Computer Labs</div>
                 <div className="text-[9px] text-slate-500 font-mono mt-0.5">1400 PCs • 150 Printers</div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-800/80 text-center">
-                <Wind className="w-5 h-5 text-emerald-400 mx-auto mb-1.5" />
-                <div className="text-lg font-black text-slate-100 font-mono">1,236</div>
-                <div className="text-[11px] font-bold text-slate-300">Ceiling Fans</div>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800/80 text-center">
+                <Wind className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mx-auto mb-1.5" />
+                <div className="text-lg font-black text-slate-900 dark:text-slate-100 font-mono">1,236</div>
+                <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Ceiling Fans</div>
                 <div className="text-[9px] text-slate-500 font-mono mt-0.5">Classrooms & Labs</div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-800/80 text-center">
-                <Building2 className="w-5 h-5 text-rose-400 mx-auto mb-1.5" />
-                <div className="text-lg font-black text-slate-100 font-mono">8</div>
-                <div className="text-[11px] font-bold text-slate-300">Passenger Lifts</div>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800/80 text-center">
+                <Building2 className="w-5 h-5 text-rose-600 dark:text-rose-400 mx-auto mb-1.5" />
+                <div className="text-lg font-black text-slate-900 dark:text-slate-100 font-mono">8</div>
+                <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Passenger Lifts</div>
                 <div className="text-[9px] text-slate-500 font-mono mt-0.5">A & B Wing Towers</div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-800/80 text-center">
-                <Zap className="w-5 h-5 text-brand-400 mx-auto mb-1.5" />
-                <div className="text-lg font-black text-slate-100 font-mono">9</div>
-                <div className="text-[11px] font-bold text-slate-300">Water Pumps</div>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800/80 text-center">
+                <Zap className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mx-auto mb-1.5" />
+                <div className="text-lg font-black text-slate-900 dark:text-slate-100 font-mono">9</div>
+                <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Water Pumps</div>
                 <div className="text-[9px] text-slate-500 font-mono mt-0.5">3HP – 10HP Motors</div>
               </div>
             </div>
 
-            <div className="mt-4 p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-start gap-2.5 text-xs text-slate-400">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+            <div className="mt-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-400">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
               <p className="leading-relaxed text-[11px]">
                 {vesitAppliances.appliance_energy_estimation?.disclaimer}
               </p>
@@ -358,26 +361,26 @@ export const DashboardPage = () => {
           </div>
         )}
 
-        {/* Bottom Row: Recent Invoices & AI / What-If Launchers */}
+        {/* Bottom Row: Recent Invoices & Intelligence Launchers */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Monthly Records Table */}
-          <div className="lg:col-span-2 glass-card rounded-2xl p-5 border border-slate-800">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+          <div className="lg:col-span-2 card-surface p-5">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
               <div>
-                <h3 className="text-sm font-bold text-slate-100">Latest VESIT Electricity Records</h3>
-                <p className="text-[11px] text-slate-400">Recent monthly invoices with calculated Scope 2 CO₂e</p>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Latest VESIT Electricity Records</h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">Verified monthly invoices with calculated Scope 2 CO₂e</p>
               </div>
               <NavLink
                 to="/data/electricity"
-                className="text-xs font-semibold text-brand-400 hover:text-brand-300 flex items-center gap-1"
+                className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
               >
-                Full 55-Month Dataset <ArrowRight className="w-3.5 h-3.5" />
+                Full History <ArrowRight className="w-3.5 h-3.5" />
               </NavLink>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="text-slate-400 border-b border-slate-800 font-medium font-mono">
+                <thead className="text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-medium font-mono">
                   <tr>
                     <th className="pb-2">Month</th>
                     <th className="pb-2">A Wing (kWh)</th>
@@ -387,15 +390,15 @@ export const DashboardPage = () => {
                     <th className="pb-2 text-right">Computed CO₂e</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60 font-mono">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
                   {vesitHistory.slice(-6).reverse().map((row) => (
-                    <tr key={row.date} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-2.5 font-bold text-slate-200">{row.month_name} {row.year}</td>
-                      <td className="py-2.5 text-cyan-400">{formatNumber(row.a_wing_kwh)}</td>
-                      <td className="py-2.5 text-emerald-400">{formatNumber(row.b_wing_kwh)}</td>
-                      <td className="py-2.5 font-bold text-slate-100">{formatNumber(row.total_kwh)}</td>
-                      <td className="py-2.5 text-slate-300">₹{formatNumber(row.total_amount)}</td>
-                      <td className="py-2.5 text-right font-bold text-emerald-400">
+                    <tr key={row.date} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <td className="py-2.5 font-bold text-slate-800 dark:text-slate-200">{row.month_name} {row.year}</td>
+                      <td className="py-2.5 text-sky-700 dark:text-sky-400">{formatNumber(row.a_wing_kwh)}</td>
+                      <td className="py-2.5 text-amber-700 dark:text-amber-400">{formatNumber(row.b_wing_kwh)}</td>
+                      <td className="py-2.5 font-bold text-slate-900 dark:text-slate-100">{formatNumber(row.total_kwh)}</td>
+                      <td className="py-2.5 text-slate-600 dark:text-slate-300">₹{formatNumber(row.total_amount)}</td>
+                      <td className="py-2.5 text-right font-bold text-emerald-600 dark:text-emerald-400">
                         {formatCarbon(row.total_co2e)}
                       </td>
                     </tr>
@@ -405,36 +408,36 @@ export const DashboardPage = () => {
             </div>
           </div>
 
-          {/* AI Advisor & What-If Launchers */}
+          {/* AI Advisor & 6-Month Forecaster Launchers */}
           <div className="space-y-4">
-            <div className="glass-card rounded-2xl p-5 border border-brand-500/30 bg-gradient-to-br from-brand-950/40 to-slate-900">
-              <div className="flex items-center gap-2 text-brand-400 font-bold text-xs uppercase tracking-wider mb-2">
+            <div className="card-surface p-5 border-emerald-300 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-950/20 dark:to-transparent">
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider mb-2 font-mono">
                 <Sparkles className="w-4 h-4" />
-                Google Gemini AI Advisor
+                Decarbonization Advisory
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed mb-4">
-                Analyzes VESIT's 308 AC units, 1,400 lab PCs, and 536 fluorescent tubes with custom payback schedules.
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                Tailored efficiency strategies for VESIT's 308 AC units, 1,400 lab PCs, and 536 fluorescent tubes with payback modeling.
               </p>
               <NavLink
                 to="/recommendations"
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-brand-600/80 hover:bg-brand-500 text-white text-xs font-bold transition-colors"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors shadow-sm"
               >
-                View AI Recommendations
+                View Recommendations
                 <ArrowRight className="w-3.5 h-3.5" />
               </NavLink>
             </div>
 
-            <div className="glass-card rounded-2xl p-5 border border-cyan-500/30 bg-gradient-to-br from-cyan-950/40 to-slate-900">
-              <div className="flex items-center gap-2 text-cyan-400 font-bold text-xs uppercase tracking-wider mb-2">
+            <div className="card-surface p-5 border-sky-300 dark:border-sky-500/30 bg-gradient-to-br from-sky-50/50 to-transparent dark:from-sky-950/20 dark:to-transparent">
+              <div className="flex items-center gap-2 text-sky-700 dark:text-sky-400 font-bold text-xs uppercase tracking-wider mb-2 font-mono">
                 <Cpu className="w-4 h-4" />
                 6-Month ML Forecaster
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed mb-4">
-                Evaluates Ridge Regression, Random Forest, & Gradient Boosting across chronological 2022–2026 data.
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                Evaluates ARIMA and Random Forest models across chronological 2022–2026 data to predict seasonal peak load.
               </p>
               <NavLink
                 to="/predictions"
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-cyan-600/80 hover:bg-cyan-500 text-white text-xs font-bold transition-colors"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition-colors shadow-sm"
               >
                 Open ML Forecast
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -447,11 +450,12 @@ export const DashboardPage = () => {
   }
 
   // ==========================================
-  // VIEW B: TEST / DEMO DATA MODE (PRESERVED)
+  // VIEW B: TEST / DEMO DATA MODE
   // ==========================================
   const totalEmissions = overview?.total_campus_emissions_kgco2e || 0;
   const scope1 = overview?.scope_breakdown?.scope_1 || 0;
   const scope2 = overview?.scope_breakdown?.scope_2 || 0;
+  const _scope3 = overview?.scope_breakdown?.scope_3 || 0;
   const topDept = overview?.top_departments?.[0]?.department_name || 'No Data';
 
   return (
@@ -460,14 +464,14 @@ export const DashboardPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-100 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
               Executive Carbon Dashboard
-            </h2>
-            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-bold uppercase tracking-wider font-mono">
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-300 dark:border-amber-500/30 text-[10px] font-bold uppercase tracking-wider font-mono">
               Test / Demo Mode
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Synthesized multi-department telemetry, scope breakdowns, and automated ISO 14064 calculations.
           </p>
         </div>
@@ -475,7 +479,7 @@ export const DashboardPage = () => {
         {(isAdmin || isMaintenance) && (
           <button
             onClick={() => setIsAddElectricityOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition-all shadow-lg shadow-brand-900/40"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-sm"
           >
             <Plus className="w-4 h-4" />
             Add Electricity Entry
@@ -504,9 +508,9 @@ export const DashboardPage = () => {
         />
 
         <StatCard
-          title="Scope 1: Direct Fleet & DG"
+          title="Scope 1: Direct Combustion"
           value={formatCarbon(scope1)}
-          subtitle="Combustion & campus transport"
+          subtitle="DG generators & campus fleet"
           icon={Flame}
           variant="amber"
           badgeText="Scope 1"
@@ -524,39 +528,39 @@ export const DashboardPage = () => {
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="glass-card rounded-2xl p-5 border border-slate-800 flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-2">
+        <div className="card-surface p-5 flex flex-col justify-between">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-2">
             <div>
-              <h3 className="text-sm font-bold text-slate-200">GHG Scope Breakdown</h3>
-              <p className="text-[11px] text-slate-400">Direct vs Indirect vs Commute</p>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">GHG Scope Breakdown</h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Direct vs Indirect vs Supply Chain</p>
             </div>
-            <span className="text-[10px] font-mono text-emerald-400 px-2 py-0.5 rounded bg-emerald-950/40 border border-emerald-800/40">
+            <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40">
               ISO 14064
             </span>
           </div>
           <ScopeDonutChart scopeBreakdown={overview?.scope_breakdown} totalEmissions={totalEmissions} />
         </div>
 
-        <div className="glass-card rounded-2xl p-5 border border-slate-800 flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-2">
+        <div className="card-surface p-5 flex flex-col justify-between">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-2">
             <div>
-              <h3 className="text-sm font-bold text-slate-200">Department Emissions Ranking</h3>
-              <p className="text-[11px] text-slate-400">Top carbon intensive zones</p>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Department Footprint Ranking</h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Ranked by carbon intensity</p>
             </div>
-            <NavLink to="/departments" className="text-xs text-brand-400 hover:text-brand-300 font-semibold">
+            <NavLink to="/departments" className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">
               View All
             </NavLink>
           </div>
           <DepartmentBarChart departmentRankings={overview?.top_departments} />
         </div>
 
-        <div className="glass-card rounded-2xl p-5 border border-slate-800 flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-2">
+        <div className="card-surface p-5 flex flex-col justify-between">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-2">
             <div>
-              <h3 className="text-sm font-bold text-slate-200">Emission Trajectory</h3>
-              <p className="text-[11px] text-slate-400">Monthly trend & seasonal variance</p>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Emission Trajectory</h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Monthly multi-scope distribution</p>
             </div>
-            <NavLink to="/analytics" className="text-xs text-brand-400 hover:text-brand-300 font-semibold">
+            <NavLink to="/analytics" className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">
               Deep Dive
             </NavLink>
           </div>
@@ -564,18 +568,18 @@ export const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Recent Electricity Activity Table */}
-      <div className="glass-card rounded-2xl p-5 border border-slate-800">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+      {/* Recent Electricity Entries Table */}
+      <div className="card-surface p-5">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
           <div>
-            <h3 className="text-sm font-bold text-slate-200">Recent Electricity Entries</h3>
-            <p className="text-[11px] text-slate-400">Verified campus energy logs and calculated carbon emissions</p>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Recent Electricity Entries</h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">Verified energy logs and calculated carbon emissions</p>
           </div>
           <NavLink
             to="/data/electricity"
-            className="text-xs font-semibold text-brand-400 hover:text-brand-300 flex items-center gap-1"
+            className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
           >
-            View Full History <ArrowRight className="w-3.5 h-3.5" />
+            Full History <ArrowRight className="w-3.5 h-3.5" />
           </NavLink>
         </div>
 
@@ -586,7 +590,7 @@ export const DashboardPage = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="text-slate-400 border-b border-slate-800 font-medium">
+              <thead className="text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-medium">
                 <tr>
                   <th className="pb-2">ID</th>
                   <th className="pb-2">Department</th>
@@ -596,23 +600,23 @@ export const DashboardPage = () => {
                   <th className="pb-2 text-right">Computed CO₂e</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                 {electricityRecords.slice(0, 5).map((row) => {
                   const dept = departments.find((d) => d.id === row.department_id);
                   return (
-                    <tr key={row.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-2.5 font-mono text-slate-500">#{row.id}</td>
-                      <td className="py-2.5 font-medium text-slate-200">
+                    <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <td className="py-2.5 font-mono text-slate-400">#{row.id}</td>
+                      <td className="py-2.5 font-medium text-slate-800 dark:text-slate-200">
                         {dept ? `${dept.name} (${dept.code})` : `Dept #${row.department_id}`}
                       </td>
-                      <td className="py-2.5 font-mono text-slate-300">{formatNumber(row.kwh)} kWh</td>
+                      <td className="py-2.5 font-mono text-slate-700 dark:text-slate-300">{formatNumber(row.kwh)} kWh</td>
                       <td className="py-2.5">
-                        <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] font-medium">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-medium font-mono">
                           {row.source}
                         </span>
                       </td>
-                      <td className="py-2.5 text-slate-400">{formatDate(row.timestamp)}</td>
-                      <td className="py-2.5 text-right font-mono font-bold text-emerald-400">
+                      <td className="py-2.5 text-slate-500 dark:text-slate-400">{formatDate(row.timestamp)}</td>
+                      <td className="py-2.5 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
                         {formatCarbon(row.kwh * 0.82)}
                       </td>
                     </tr>
